@@ -1,0 +1,8 @@
+{
+  "name": "civicsync-backend-contract",
+  "private": true,
+  "type": "module",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": { "@supabase/supabase-js": "^2.57.0" },
+  "devDependencies": { "typescript": "^5.9.2", "vite": "^7.1.0" }
+}

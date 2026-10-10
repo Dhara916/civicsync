@@ -1,0 +1,2 @@
+import { Icon, type IconName } from './Icon';
+export function StatCard({label, value, note, icon, accent = ''}: {label: string; value: number; note: string; icon: IconName; accent?: string}) { return <article className={`stat-card ${accent}`}><div className="stat-top"><span>{label}</span><span className="stat-icon"><Icon name={icon}/></span></div><strong className="stat-value">{value.toLocaleString('en-IN')}</strong><p>{note}</p></article>; }

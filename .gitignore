@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.test-build/
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+.vercel/
+*.log
+.DS_Store

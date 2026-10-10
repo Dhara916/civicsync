@@ -1,0 +1,2 @@
+47 TypeScript source files passed syntax/local-import/service-boundary checks; selected SQL safeguards were found.
+This is a limited source audit, not SQL execution or live backend verification.

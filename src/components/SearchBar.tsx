@@ -1,0 +1,2 @@
+import { Icon } from './Icon';
+export function SearchBar({value, onChange, placeholder = 'Search projects or roads', id = 'project-search'}: {value: string; onChange: (value: string) => void; placeholder?: string; id?: string}) { return <div className="search-input"><Icon name="search" size={18}/><label className="sr-only" htmlFor={id}>{placeholder}</label><input id={id} type="search" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} autoComplete="off" maxLength={120}/></div>; }

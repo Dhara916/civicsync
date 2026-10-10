@@ -1,0 +1,12 @@
+{
+  "updated": "2026-10-10",
+  "npm_install": "119 packages added; 0 reported vulnerabilities",
+  "unit_tests": { "passed": 63, "failed": 0 },
+  "source_audit": { "files": 47, "result": "passed", "scope": "syntax, relative imports, UI/service boundaries, selected SQL safeguards" },
+  "typecheck": "passed",
+  "production_build": "passed with Vite chunk-size and import advisories; no backend env configured",
+  "sql_postgres_postgis": "not run; psql and Docker unavailable",
+  "live_supabase": "not run; migrations not applied",
+  "browser_e2e": "not run",
+  "vercel_deployment": "not performed"
+}

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "lib": ["ES2022", "DOM"], "module": "NodeNext",
+    "moduleResolution": "NodeNext", "strict": true, "skipLibCheck": true,
+    "rootDir": "src", "outDir": ".test-build", "types": []
+  },
+  "include": ["src/contracts/database.ts", "src/types/conflict.ts", "src/integrations/person2Contract.ts", "src/lib/domain.ts", "src/lib/validation.ts", "src/lib/environment.ts", "src/lib/permissions.ts", "src/lib/format.ts"]
+}

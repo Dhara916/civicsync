@@ -1,0 +1,35 @@
+import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import type { ProjectConflict, ConflictStatus } from '../types/conflict';
+import { getConflicts, getConflictEvents } from '../services/conflictService';
+import { getDepartments, getProjectsByIds } from '../services/projectService';
+import { useResource } from '../hooks/useResource';
+import { useAuth } from '../contexts/AuthContext';
+import { canReviewConflict } from '../lib/permissions';
+import { formatDateTime, humanize } from '../lib/format';
+import { PageHeading, Button, ErrorPanel, Loading, EmptyState, Notice, Pager } from '../components/UI';
+import { ConflictAlert } from '../components/ConflictAlert';
+import { ConflictResolution } from '../components/ConflictResolution';
+import { Icon } from '../components/Icon';
+const FILTERS: {value: ConflictStatus | ''; label: string}[] = [{value: 'open', label: 'Needs review'}, {value: 'coordinating', label: 'Coordinating'}, {value: 'resolved', label: 'Resolved'}, {value: 'dismissed', label: 'Dismissed'}, {value: 'cleared', label: 'No longer overlapping'}, {value: '', label: 'All records'}];
+function History({conflictId}: {conflictId: string}) {
+  const [open, setOpen] = useState(false), [page, setPage] = useState(1);
+  const resource = useResource(`conflict-events:${conflictId}:${page}`, () => getConflictEvents(conflictId, page), {enabled: open});
+  return <div className="conflict-history"><button className="text-link" onClick={() => setOpen(v => !v)} aria-expanded={open}>{open ? 'Hide decision history' : 'View decision history'}<Icon name="chevron" size={14}/></button>{open && <>{resource.loading && <Loading label="Loading saved history…"/>}{resource.error && <ErrorPanel message={resource.error} retry={resource.reload}/>} {resource.data && <><ol>{resource.data.items.map(event => <li key={event.id}><div><strong>{humanize(event.event_type)}</strong><time dateTime={event.created_at}>{formatDateTime(event.created_at)}</time></div><p>{event.note}</p></li>)}</ol><Pager page={page} total={resource.data.total} pageSize={resource.data.pageSize} onChange={setPage}/></>}</>}</div>;
+}
+export default function ConflictReview() {
+  const [params, setParams] = useSearchParams(), {profile, user} = useAuth();
+  const projectId = params.get('project') ?? '';
+  const statusValue = params.get('status') ?? (projectId ? '' : 'open');
+  const status = FILTERS.some(f => f.value === statusValue) ? statusValue as ConflictStatus | '' : 'open';
+  const rawPage = Number(params.get('page') ?? 1), page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const [review, setReview] = useState<ProjectConflict | null>(null), [success, setSuccess] = useState('');
+  const resource = useResource(`conflicts:${status}:${projectId}:${page}:${user?.id ?? ''}`, async () => {const result = await getConflicts({status, projectId: projectId || undefined, page}); const [projects, departments] = await Promise.all([getProjectsByIds(result.items.flatMap(c => [c.project_a_id, c.project_b_id])), getDepartments()]); return {result, projects, departments};});
+  const change = (key: string, value: string) => {const next = new URLSearchParams(params); next.set(key, value); if (key !== 'page') next.delete('page'); setParams(next);};
+  return <><PageHeading eyebrow="DIG-ONCE COORDINATION" title="Resolve overlaps. Reduce repeat digging." description="Review potential conflicts before they turn into repeated disruption. Every alert and decision is saved in the database." actions={<Button variant="secondary" onClick={resource.reload} disabled={resource.loading}><Icon name="refresh" size={17}/>Refresh</Button>}/><Notice>Alerts combine inclusive schedule overlap, potentially conflicting work types, and a shared road segment or work extents within 30 metres. They are advisory and do not grant excavation permission.</Notice>{success && <Notice tone="success">{success}</Notice>}<div className="review-toolbar"><div className="filter-tabs" role="group" aria-label="Conflict status">{FILTERS.map(f => <button key={f.value} className={f.value === status ? 'selected' : ''} aria-pressed={f.value === status} onClick={() => change('status', f.value)}>{f.label}</button>)}</div>{projectId && <Link className="text-link" to="/conflicts">Remove project filter</Link>}</div>{resource.loading && <Loading/>}{resource.error && <ErrorPanel message={resource.error} retry={resource.reload}/>} {resource.data && <>{resource.data.result.items.length ? <div className="conflict-cards">{resource.data.result.items.map(conflict => {
+    const a = resource.data!.projects.find(p => p.id === conflict.project_a_id), b = resource.data!.projects.find(p => p.id === conflict.project_b_id);
+    const allowed = a && b && canReviewConflict(profile, a, b);
+    const departments = [a, b].filter(Boolean).map(p => resource.data!.departments.find(d => d.id === p!.department_id)?.name ?? 'Department unavailable');
+    return <article className="panel conflict-review-card" key={conflict.id}><ConflictAlert conflict={conflict} projects={resource.data!.projects}/><div className="conflict-evidence"><div><span>Involved departments</span><strong>{[...new Set(departments)].join(' + ') || 'Unavailable'}</strong></div><div><span>Location evidence</span><strong>{conflict.spatial_reason}{conflict.distance_m != null ? ` · ${conflict.distance_m.toFixed(1)} m apart` : ''}</strong></div><div><span>Last changed</span><strong>{formatDateTime(conflict.updated_at)}</strong></div></div>{conflict.resolution_note && <div className="decision-note"><strong>Recorded decision</strong><p>{conflict.resolution_note}</p>{conflict.reviewed_at && <small>{formatDateTime(conflict.reviewed_at)}</small>}</div>}<div className="conflict-review-actions"><span>{!conflict.is_current ? 'The current project records no longer meet the overlap rules.' : conflict.status !== 'open' && conflict.status !== 'coordinating' ? 'This version has a recorded decision. Material changes reopen review.' : allowed ? 'You are authorized to review this project pair.' : 'Review is restricted to approved officials from an involved department, or admins.'}</span>{(conflict.status === 'open' || conflict.status === 'coordinating') && allowed && <Button onClick={() => setReview(conflict)}>Record decision <Icon name="arrow" size={16}/></Button>}</div><History conflictId={conflict.id}/></article>;
+  })}</div> : <section className="panel"><EmptyState icon="layers" title="No alerts in this view" description="The database returned no matching records. Change the status filter or return after new projects are registered."/></section>}<Pager page={page} total={resource.data.result.total} pageSize={resource.data.result.pageSize} onChange={p => change('page', String(p))}/></>}{review && <ConflictResolution conflict={review} close={() => setReview(null)} saved={() => {setReview(null); setSuccess('Your coordination decision was saved. The current record and its history have been refreshed.'); resource.reload();}}/>}</>;
+}

@@ -1,0 +1,17 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { canonicalPair, datesOverlap, isISODate, normalizeSegmentId, overlapWindow, transitionAllowed, workTypesConflict } from '../.test-build/lib/domain.js';
+import { PROJECT_STATUSES, WORK_TYPES } from '../.test-build/contracts/database.js';
+const A='00000000-0000-4000-8000-000000000001', B='00000000-0000-4000-8000-000000000002';
+test('ISO dates reject impossible days and accept leap years',()=>{assert.equal(isISODate('2028-02-29'),true); for(const d of ['2027-02-29','2026-13-01','2026-04-31','2026-1-01','not-a-date','']) assert.equal(isISODate(d),false);});
+test('inclusive date boundaries count as overlap',()=>assert.equal(datesOverlap('2030-01-01','2030-01-10','2030-01-10','2030-01-20'),true));
+test('adjacent but non-shared calendar dates do not overlap',()=>assert.equal(datesOverlap('2030-01-01','2030-01-10','2030-01-11','2030-01-20'),false));
+test('single-day projects can overlap',()=>assert.equal(datesOverlap('2030-02-03','2030-02-03','2030-02-03','2030-02-03'),true));
+test('containment is an overlap in either argument order',()=>{assert.equal(datesOverlap('2030-01-01','2030-01-31','2030-01-05','2030-01-06'),true);assert.equal(datesOverlap('2030-01-05','2030-01-06','2030-01-01','2030-01-31'),true);});
+test('invalid or reversed ranges do not produce an overlap',()=>{assert.equal(datesOverlap('2030-01-11','2030-01-01','2030-01-01','2030-01-20'),false);assert.equal(datesOverlap('invalid','2030-01-01','2030-01-01','2030-01-20'),false);});
+test('overlap window reports the actual intersection',()=>{assert.deepEqual(overlapWindow('2030-01-01','2030-01-15','2030-01-10','2030-02-01'),{start:'2030-01-10',end:'2030-01-15'});assert.equal(overlapWindow('2030-01-01','2030-01-02','2030-02-01','2030-02-02'),null);});
+test('canonical pairs are order-independent and reject self-pairs',()=>{assert.deepEqual(canonicalPair(A,B),[A,B]);assert.deepEqual(canonicalPair(B,A),[A,B]);assert.throws(()=>canonicalPair(A,A));});
+test('canonical UUID pairs normalize letter case',()=>{const a='aaaaaaaa-0000-4000-8000-000000000001';assert.throws(()=>canonicalPair(a,a.toUpperCase()));});
+test('segment IDs normalize whitespace and case, never invent an ID',()=>{assert.equal(normalizeSegmentId('  CITY:ROAD:  EAST  '),'city:road: east');assert.equal(normalizeSegmentId(null),'');assert.equal(normalizeSegmentId('   '),'');});
+test('all work-type combinations match the documented intrusive-work rule',()=>{for(const a of WORK_TYPES)for(const b of WORK_TYPES){assert.equal(workTypesConflict(a,b),a!=='inspection'&&b!=='inspection',`${a}/${b}`);assert.equal(workTypesConflict(a,b),workTypesConflict(b,a));}});
+test('all 25 status transitions match the explicit state machine',()=>{const matrix={planned:['planned','in_progress','delayed','cancelled'],in_progress:['in_progress','delayed','completed','cancelled'],delayed:['delayed','planned','in_progress','completed','cancelled'],completed:['completed'],cancelled:['cancelled']};for(const a of PROJECT_STATUSES)for(const b of PROJECT_STATUSES)assert.equal(transitionAllowed(a,b),matrix[a].includes(b),`${a} -> ${b}`);});

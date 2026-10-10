@@ -1,0 +1,80 @@
+
+> civicsync-final@1.0.0 test
+> tsc -p tsconfig.tests.json && node --test tests/*.test.mjs
+
+✔ ISO dates reject impossible days and accept leap years (7.8543ms)
+✔ inclusive date boundaries count as overlap (0.4992ms)
+✔ adjacent but non-shared calendar dates do not overlap (0.3598ms)
+✔ single-day projects can overlap (0.2635ms)
+✔ containment is an overlap in either argument order (0.9043ms)
+✔ invalid or reversed ranges do not produce an overlap (0.3193ms)
+✔ overlap window reports the actual intersection (3.2003ms)
+✔ canonical pairs are order-independent and reject self-pairs (0.7895ms)
+✔ canonical UUID pairs normalize letter case (0.7147ms)
+✔ segment IDs normalize whitespace and case, never invent an ID (1.225ms)
+✔ all work-type combinations match the documented intrusive-work rule (0.6666ms)
+✔ all 25 status transitions match the explicit state machine (0.5372ms)
+✔ date-only formatting does not shift a day across time zones (160.9654ms)
+✔ missing dates are labelled, not fabricated (0.4654ms)
+✔ invalid timestamps are visibly invalid (0.5008ms)
+✔ overdue calculation never produces negative days (1.0636ms)
+✔ initials are derived from user-supplied names (0.7059ms)
+✔ enum labels are human-readable (0.5387ms)
+✔ Person 2 ongoing status round-trips to the UI progress state (2.7568ms)
+✔ legacy project work types remain readable and detailed types remain exact (2.0215ms)
+✔ legacy and detailed report categories preserve their stored value (0.5294ms)
+✔ Person 2 report lifecycle labels map to the citizen UI vocabulary (2.7683ms)
+✔ missing configuration explicitly disables the backend (3.756ms)
+✔ HTTPS publishable configuration is accepted (0.5ms)
+✔ local HTTP Supabase is supported (0.3656ms)
+✔ remote HTTP and credential-bearing URLs are rejected (0.4713ms)
+✔ new-format secret keys never initialize the browser client (0.3864ms)
+✔ legacy service-role keys are rejected (1.2083ms)
+✔ legacy anon JWT is supported (0.6491ms)
+✔ arbitrary JWT roles and malformed keys are rejected (1.0614ms)
+✔ citizens and unauthenticated visitors cannot manage projects (0.5892ms)
+✔ pending and rejected officials are denied (0.6499ms)
+✔ officials require an assigned department (0.3836ms)
+✔ officials may manage their own department only (0.2815ms)
+✔ approved admins can manage any department (0.2837ms)
+✔ conflict review accepts either involved department, not an unrelated one (0.2512ms)
+✔ valid project payload is accepted (6.6184ms)
+✔ missing department UUID is rejected (0.7858ms)
+✔ empty project title is rejected (0.4079ms)
+✔ invalid work types are not silently mapped (0.3543ms)
+✔ end date before start is rejected (0.5147ms)
+✔ impossible project date is rejected (0.8047ms)
+✔ same-day schedule is valid (0.6197ms)
+✔ NaN, Infinity and out-of-range coordinates are rejected (0.6738ms)
+✔ zero is a valid coordinate, not a missing value (0.7158ms)
+✔ malformed UUIDs are rejected (0.9883ms)
+✔ point geometry uses longitude before latitude (2.0254ms)
+✔ line geometry accepts a real two-point extent (0.6483ms)
+✔ empty, one-point and duplicate-only lines are rejected (2.3036ms)
+✔ lines are limited to 200 points (0.6305ms)
+✔ unsupported GeoJSON polygon, feature and malformed input are rejected (0.3383ms)
+✔ string coordinates and third dimensions are rejected (0.3331ms)
+✔ geometry anchor must match supplied coordinates (0.3786ms)
+✔ long road-segment identifiers are rejected (0.2868ms)
+✔ report requires a registered project (0.2144ms)
+✔ report accepts clear observations, rejects short or blank text (0.2375ms)
+✔ report category must match the shared contract (0.1609ms)
+✔ update enforces optimistic version and meaningful progress note (0.3462ms)
+✔ completed updates require 100 percent progress (0.1264ms)
+✔ delayed updates require a meaningful reason (0.174ms)
+✔ return paths reject external URLs, protocol-relative paths and backslashes (0.316ms)
+✔ search input cannot introduce PostgREST control punctuation (0.994ms)
+✔ search input is capped and trims repeated whitespace (0.1986ms)
+ℹ tests 63
+ℹ suites 0
+ℹ pass 63
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 444.1061
+npm notice
+npm notice New major version of npm available! 11.16.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
